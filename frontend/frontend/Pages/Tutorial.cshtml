@@ -1,0 +1,255 @@
+﻿@page
+@model frontend.Pages.TutorialModel
+@{
+}
+@{
+    Layout = "_Layout";
+}
+
+<div style="text-align: center;">
+
+<h2>What is expected of the participant: (Tutorial)</h2>
+</div>
+<div style="text-align: left;">
+
+    <p>
+        <div id="tutorial0">
+            <div class="container">
+                <div class="row align-items-start">
+                    <div class="col-4">
+                        <p>
+                            The following is an overview of the flow of the application and study.
+                            The application is an art recommendation system. With this we mean: based on your selection of artworks, the system will try and find similar artworks that may also be of interest.
+                        </p>
+                        <h4><strong>In short:</strong></h4>
+                        <ol>
+                            <li>You will start by selecting 15 or more artworks based on the criteria of a given task.</li>
+                            <li>Next, you will be given 21 recommendations</li>
+                            <li>Give a rating (using 1 to 5 stars) to each recommendation</li>
+                            <li>
+                                At the right of the recommendation, an <strong>explanation</strong> is given consisting of a category. This <strong>explanation</strong>
+                                explains what the application believes to be an important piece of information to determine the recommendation. <strong>It is very important that you try to understand this explanation, this is the core of the study!</strong>
+                            </li>
+                            <li>
+                                This explanation must be rated on whether you believe them to be relevant - that is, it makes you understand why the system decided this recommendation would be of interest to the user. When you believe the explanation is
+                                relevant: you press the thumbs up (relevant), otherwise press thumbs down (not relevant)
+                            </li>
+                            <li>After each set of 3 recommendations, you will be presented a questionnaire.</li>
+                            <li>For the last 3 recommendations, you are asked to rank each explanation category according to what you find most important to understand the recommendation.</li>
+                            <li>After having done this for three recommendations, you will be presented a final questionnaire.</li>
+                        </ol>
+                    </div>
+                    <div class="col-6">
+                        <img src="~/images/mainscreen.png" style="width:110%;">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="tutorial1">
+            <div class="container">
+                <div class="row align-items-start">
+                    <div class="col">
+                        <p>
+                            To study effects of explanations on a user, an art recommendation system has been build.
+                            This art recommendation system will ask you to select 15 (or more) artworks that comply with certain criteria.
+                            The criteria will be visible at the top of the first page. The progress can be seen after the name of the task (in this case 0/15).
+                        </p>
+                        <p>The intent of an application such as this is to search and find artworks similar to those you like. Real world examples of recommendation systems using different mediums are film recommendations by Netflix, or recommendations of music you might enjoy by Spotify. Bol.com also recommends products based on previously bought items.</p>
+                    </div>
+                    <div class="col">
+                        <img src="~/images/task.png">
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="tutorial2">
+            <div class="container">
+                <div class="row align-items-start">
+                    <div class="col-4">
+                        <p>
+                            Artworks can be favorited by pressing the <img src="~/images/favorite.png" style="width:5%;" /> button on the artwork.
+                            After which the heart icon and border will turn bright red. To remove a favorite artwork, the heart icon can be pressed once again.
+                        </p>
+                        <p>
+                            To view a description of an artwork the <img src="~/images/info.png" style="width:5%;" /> can be pressed.
+                        </p>
+                        <p>
+                            Artworks can be found using the searchbar using filters, or by selecting a page number at the bottom.
+                        </p>
+                    </div>
+                    <div class="col-6">
+                        <img src="~/images/artworks.png" style="width:110%;">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="tutorial3">
+            <div class="container">
+                <div class="row align-items-start">
+                    <div class="col-4">
+                        <p>
+                            After selecting some artworks, it is possible to view and delete those artworks if they are not to your satisfaction.
+                            When pressing the "Favorites" button at the top of the window in the navigation bar, the following screen is shown.
+                        </p>
+                        <p>
+                            To delete a favorite, press the red X button.
+                        </p>
+                    </div>
+                    <div class="col-6">
+                        <img src="~/images/favoritespage.png" style="width:110%;">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="tutorial4">
+            <div class="container">
+                <div class="row align-items-start">
+                    <div class="col">
+                        <p>
+                            When the task has been completed, it is possible to progress to the next stage by pressing the
+                            continue button underneath the task.
+                        </p>
+                        <p><strong>Note: it is here after no longer possible to add or delete artworks to your favorites!</strong></p>
+                    </div>
+                    <div class="col">
+                        <img src="~/images/taskcomplete.png" style="width:90%;">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="tutorial5">
+            <div class="container">
+                <div class="row align-items-start">
+                    <div class="col-6">
+                        <p>
+                            Next, you will be presented with a screen containing a <span style="background-color: #FFFF00"><strong>recommendation (left)</strong></span> and an <span style="background-color: #FFFF00"><strong>explanation (right)</strong></span>
+                            A recommendation is found by taking your previously liked artworks and finding similarities between them. Based on these similarities, a new artwork is found.
+                            To progress, each of the three recommendations must be rated from one star (very bad) to five stars (very good).
+                        </p>
+                        <p>
+                            <span style="background-color: #FFFF00"><strong>The explanation (right)</strong></span> consist of a single category. The category is made up of factors. In this case "Impressionism".
+                        </p>
+                    </div>
+                    <div class="col-4">
+                        <img src="~/images/explanation.png" style="width:160%;">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="tutorial6">
+            <div class="container">
+                <div class="row align-items-start">
+                    <div class="col">
+                        <p>
+                            Before proceeding, it is important to try and understand why the shown category is important to the
+                            recommendation system. And to ask yourself whether the category, and the factors within it provide a clear explanation for the recommendation.
+                            And whether you believe these categories are sufficiently detailed, aswell as providing reasons that are to you necessary to find this recommendation.
+                            <strong>This is the core of the study and this is what the questionnaire at the end will be about!</strong>
+                        </p>
+                        <p>
+                            You are expected to give a thumbs up or thumbs down depending on whether you believe, given your previously favourited artworks and your recommended artwork, this category explains the recommendation well.
+                            After the artwork has been rated, and the category received a thumbs up/down, you can move on to the next recommendation using the "next" button underneath the recommendation.
+                        </p>
+                        <p>
+                            To be clear, the rating given to the artwork using the stars are based on whether you find this recommendation good given your favortites. The thumbs up/down indicate whether you believe the category explains the recommendation systems decision well.
+                        </p>
+                        <p>
+                            For example, in the case to the right, the artstyle category is provided as an explanation for the decision made by the recommendation system to recommend the artwork on the left. Does this explain the recommendation well? Do the factors within the explanation make sense? If so, mark the category relevant using the thumbs up.
+                        </p>
+                    </div>
+                    <div class="col">
+                        <img src="~/images/explanation.png" style="width:110%;">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="tutorial7">
+            <div class="container">
+                <div class="row align-items-start">
+                    <div class="col">
+                        <p>
+                            After doing this for the first 3 you will be presented with a questionnaire.
+                        </p>
+                        <p>
+                            This process if done for a total of 18 recommendations (for every 3 recommendations, 1 questionnaire).
+                        </p>
+                    </div>
+                    <div class="col">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="tutorial8">
+            <div class="container">
+                <div class="row align-items-start">
+                    <div class="col">
+                        <p>
+                            In the last 3 recommendations, you are asked to rate the recommmendation and to rank the categories by how well they explain the recommendation.
+                        <p>
+                        </p>
+                        <p>
+                            Use the arrow up and arrow down to reoder the categories. Where the category at the top is the best explanation, and the one on the bottom is the worst explanation.
+                        </p>
+                        <p>
+                            After having done this process for the 3 recommendations, you are presented the final questionnaire.
+                        </p>
+                    </div>
+                    <div class="col">
+                        <img src="~/images/explanation2.png" style="width:110%;">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </p>
+    </div>
+
+        <div class="justify-content-center">
+            <button type="button" class="btn btn-secondary" id="prevButton" onclick="prevTutorial()">Previous</button>
+            <button type="button" class="btn btn-primary" id="nextButton" onclick="nextTutorial()">Next</button>
+        </div>
+
+
+
+
+    <script>
+            var currentTutorial = 0;
+        showTutorialPage();
+
+    function prevTutorial() {
+        if (currentTutorial > 0) {
+            currentTutorial--;
+        }
+
+        showTutorialPage();
+    }
+
+    function nextTutorial() {
+        if (currentTutorial < 8) {
+            currentTutorial++;
+        }
+        showTutorialPage();
+    }
+
+    function showTutorialPage() {
+        for (var i = 0; i < 9; i++) {
+            var tutorialDiv = document.getElementById('tutorial' + i);
+            if (tutorialDiv) {
+                tutorialDiv.style.display = 'none';
+            }
+        }
+        var showDiv = document.getElementById('tutorial' + currentTutorial);
+        if (showDiv) {
+            showDiv.style.display = 'block';
+        }
+
+        var prevElement = document.getElementById("prevButton");
+        prevElement.style.display = currentTutorial == 0 ? 'none' : '';
+
+        var nextElement = document.getElementById("nextButton");
+        nextElement.style.display = currentTutorial == 8 ? 'none' : '';
+    }
+</script>

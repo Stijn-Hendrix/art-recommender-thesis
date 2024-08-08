@@ -1,0 +1,436 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Home page";
+}
+
+@{
+    Layout = "_StartLayout";
+}
+
+<div style="text-align: center;">
+    <h1>Exploration of explanations for art based recommendation systems</h1>
+</div>
+
+<div style="text-align: left;">
+    <div>
+        <h4>Promotor:</h4>
+        Katrien Verbert, katrien.verbert@kuleuven.be, +3216328286, Mens-Machine Interactie Leuven,
+        Celestijnenlaan 200A
+    </div>
+    
+    <p></p>
+    
+    <div>
+        <h4>Researcher(s):</h4>
+        Stijn Hendrix, stijn.hendrix@student.kuleuven.be, +32471901078 <br />
+        Ivania Nadine Donoso Guzmán, ivania.donoso@kuleuven.be <br />
+        Aditya Bhattacharya, aditya.bhattacharya@kuleuven.be
+     </div>
+
+     <p></p>
+
+    <h2 style="padding-top:5rem;">Goal and methodology of the research:</h2>
+
+    <p>
+        In artificial intelligence (AI) research, increasing importance is being placed on not only
+        the results of an AI system, but also to how this AI system arrived at a result.
+        This "how" is also called the explainability of an AI system (abbreviated: XAI). An AI
+        system thus provides both a result (prediction) and an explanation. The question then is:
+        given an AI system and an explanation, can we distinguish distinct properties
+        in an explanation, and if we can, what effect do the properties have on
+        eachother.
+        In the field of XAI, several properties have surfaced in the literature, but it is not
+        always clear whether these properties have relationships between each other, and whether the
+        properties can be measured. The goal of this study is to measure a number of properties with the intention of 
+        finding out whether 1. the relationship actually exists, and 2. if it exists, what is the effect of the properties on a user.
+    </p>
+
+	<p><strong>Important: To perform the study as intended, it is necessary to access the website using a laptop or desktop PC.</strong></p>
+
+    <h2 style="padding-top:5rem;">What is expected of the participant: (Tutorial)</h2>
+    <p>
+        <div id="tutorial0">
+            <div class="container">
+                <div class="row align-items-start">
+                    <div class="col-4">
+                        <p>
+                            The following is an overview of the flow of the application and study.
+                            The application is an art recommendation system. With this we mean: based on your selection of artworks, the system will try and find similar artworks that may also be of interest.
+                        </p>
+                        <h4><strong>In short:</strong></h4>
+                        <ol>
+                            <li>You will start by selecting 15 or more artworks based on the criteria of a given task.</li>
+                            <li>Next, you will be given 21 recommendations</li>
+                            <li>Give a rating (using 1 to 5 stars) to each recommendation</li>
+                            <li>At the right of the recommendation, an <strong>explanation</strong> is given consisting of a category. This <strong>explanation</strong>
+                                explains what the application believes to be an important piece of information to determine the recommendation. <strong>It is very important that you try to understand this explanation, this is the core of the study!</strong></li>
+                            <li>This explanation must be rated on whether you believe them to be relevant - that is, it makes you understand why the system decided this recommendation would be of interest to the user. When you believe the explanation is 
+                                relevant: you press the thumbs up (relevant), otherwise press thumbs down (not relevant) </li>
+                            <li>After each set of 3 recommendations, you will be presented a questionnaire.</li>
+                            <li>For the last 3 recommendations, you are asked to rank each explanation category according to what you find most important to understand the recommendation.</li>
+                            <li>After having done this for three recommendations, you will be presented a final questionnaire.</li>
+                        </ol>
+                    </div>
+                    <div class="col-6">
+                        <img src="~/images/mainscreen.png" style="width:110%;">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="tutorial1">
+            <div class="container">
+                <div class="row align-items-start">
+                    <div class="col">
+                        <p>
+                            To study effects of explanations on a user, an art recommendation system has been build.
+                            This art recommendation system will ask you to select 15 (or more) artworks that comply with certain criteria.
+                            The criteria will be visible at the top of the first page. The progress can be seen after the name of the task (in this case 0/15).
+                        </p>
+                        <p>The intent of an application such as this is to search and find artworks similar to those you like. Real world examples of recommendation systems using different mediums are film recommendations by Netflix, or recommendations of music you might enjoy by Spotify. Bol.com also recommends products based on previously bought items.</p>
+                    </div>
+                    <div class="col">
+                        <img src="~/images/task.png">
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="tutorial2">
+            <div class="container">
+                <div class="row align-items-start">
+                    <div class="col-4">
+                        <p>
+                            Artworks can be favorited by pressing the <img src="~/images/favorite.png" style="width:5%;" /> button on the artwork.
+                            After which the heart icon and border will turn bright red. To remove a favorite artwork, the heart icon can be pressed once again.
+                        </p>
+                        <p>
+                            To view a description of an artwork the <img src="~/images/info.png" style="width:5%;" /> can be pressed.
+                        </p>
+                        <p>
+                            Artworks can be found using the searchbar using filters, or by selecting a page number at the bottom.
+                        </p>
+                    </div>
+                    <div class="col-6">
+                        <img src="~/images/artworks.png" style="width:110%;">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="tutorial3">
+            <div class="container">
+                <div class="row align-items-start">
+                    <div class="col-4">
+                        <p>
+                            After selecting some artworks, it is possible to view and delete those artworks if they are not to your satisfaction.
+                            When pressing the "Favorites" button at the top of the window in the navigation bar, the following screen is shown.
+                        </p>
+                        <p>
+                            To delete a favorite, press the red X button.
+                        </p>
+                    </div>
+                    <div class="col-6">
+                        <img src="~/images/favoritespage.png" style="width:110%;">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="tutorial4">
+            <div class="container">
+                <div class="row align-items-start">
+                    <div class="col">
+                        <p>
+                            When the task has been completed, it is possible to progress to the next stage by pressing the
+                            continue button underneath the task.
+                        </p>
+                        <p><strong>Note: it is here after no longer possible to add or delete artworks to your favorites!</strong></p>
+                    </div>
+                    <div class="col">
+                        <img src="~/images/taskcomplete.png" style="width:90%;">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="tutorial5">
+            <div class="container">
+                <div class="row align-items-start">
+                    <div class="col-6">
+                        <p>
+                            Next, you will be presented with a screen containing a <span style="background-color: #FFFF00"><strong>recommendation (left)</strong></span> and an <span style="background-color: #FFFF00"><strong>explanation (right)</strong></span>
+                            A recommendation is found by taking your previously liked artworks and finding similarities between them. Based on these similarities, a new artwork is found.
+                            To progress, each of the three recommendations must be rated from one star (very bad) to five stars (very good).
+                        </p>
+                        <p>
+                            <span style="background-color: #FFFF00"><strong>The explanation (right)</strong></span> consist of a single category. The category is made up of factors. In this case "Impressionism".
+                        </p>
+                    </div>
+                    <div class="col-4">
+                        <img src="~/images/explanation.png" style="width:160%;">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="tutorial6">
+            <div class="container">
+                <div class="row align-items-start">
+                    <div class="col">
+                        <p>
+                            Before proceeding, it is important to try and understand why the shown category is important to the 
+                            recommendation system. And to ask yourself whether the category, and the factors within it provide a clear explanation for the recommendation. 
+                            And whether you believe these categories are sufficiently detailed, aswell as providing reasons that are to you necessary to find this recommendation.
+                            <strong>This is the core of the study and this is what the questionnaire at the end will be about!</strong>
+                        </p>
+                        <p>
+                            You are expected to give a thumbs up or thumbs down depending on whether you believe, given your previously favourited artworks and your recommended artwork, this category explains the recommendation well.
+                            After the artwork has been rated, and the category received a thumbs up/down, you can move on to the next recommendation using the "next" button underneath the recommendation.
+                        </p>
+                        <p>
+                            To be clear, the rating given to the artwork using the stars are based on whether you find this recommendation good given your favortites. The thumbs up/down indicate whether you believe the category explains the recommendation systems decision well.
+                        </p>
+                        <p>
+                            For example, in the case to the right, the artstyle category is provided as an explanation for the decision made by the recommendation system to recommend the artwork on the left. Does this explain the recommendation well? Do the factors within the explanation make sense? If so, mark the category relevant using the thumbs up.
+                        </p>
+                    </div>
+                    <div class="col">
+                        <img src="~/images/explanation.png" style="width:110%;">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="tutorial7">
+            <div class="container">
+                <div class="row align-items-start">
+                    <div class="col">
+                        <p>
+                            After doing this for the first 3 you will be presented with a questionnaire.
+                        </p>
+                        <p>
+                            This process if done for a total of 18 recommendations (for every 3 recommendations, 1 questionnaire).
+                        </p>
+                    </div>
+                    <div class="col">
+                    </div>
+                </div>
+            </div>
+        </div>
+         <div id="tutorial8">
+            <div class="container">
+                <div class="row align-items-start">
+                    <div class="col">
+                        <p>
+                            In the last 3 recommendations, you are asked to rate the recommmendation and to rank the categories by how well they explain the recommendation. 
+                        <p>
+                        </p>
+                        <p>
+                            Use the arrow up and arrow down to reoder the categories. Where the category at the top is the best explanation, and the one on the bottom is the worst explanation.
+                        </p>
+                        <p>
+                            After having done this process for the 3 recommendations, you are presented the final questionnaire.
+                        </p>
+                    </div>
+                    <div class="col">
+                        <img src="~/images/explanation2.png" style="width:110%;">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="justify-content-center">
+        <button type="button" class="btn btn-secondary" id="prevButton" onclick="prevTutorial()">Previous</button>
+            <button type="button" class="btn btn-primary" id="nextButton" onclick="nextTutorial()">Next</button>
+        </div>
+  </p>
+        
+    <h2 style="padding-top:5rem;">Duration of the experiment:</h2>
+    <p>25-30 minutes</p>
+
+    <h2 style="padding-top:5rem;">Informed Consent</h2>
+
+        <p>
+             <strong id="rateRecommendation">(<span style="color:red;"> *</span> )</strong>
+    <input class="form-check-input" type="checkbox" value="" id="box1" onclick="toggleInitialConsent(this)" checked>
+            <label class="form-check-label" for="box1">
+            I understand what is expected of me during this research.
+        </label>
+
+        <p>
+    <strong id="rateRecommendation">(<span style="color:red;"> *</span> )</strong>
+    <input class="form-check-input" type="checkbox" value="" id="box2" onclick="toggleInitialConsent(this)" checked>
+            <label class="form-check-label" for="box2">
+            I know that I will participate in the above described trials or tests.
+        </label>
+
+
+        <p>
+             <strong id="rateRecommendation">(<span style="color:red;"> *</span> )</strong>
+    <input class="form-check-input" type="checkbox" value="" id="box3" onclick="toggleInitialConsent(this)" checked>
+            <label class="form-check-label" for="box3">
+
+            I know that for aditional queries or concerns I can reach out to the researcher (Stijn Hendrix, stijn.hendrix@student.kuleuven, +32471901078)
+        </label>
+
+        <p>
+             <strong id="rateRecommendation">(<span style="color:red;"> *</span> )</strong>
+    <input class="form-check-input" type="checkbox" value="" id="box4" onclick="toggleInitialConsent(this)" checked>
+        <label class="form-check-label" for="box4">
+            I or others can benefit from this research in the following ways: The results can be used to improve the explainability of art recommendations and image recommendations in general.
+        </label>
+
+        <p>
+             <strong id="rateRecommendation">(<span style="color:red;"> *</span> )</strong>
+    <input class="form-check-input" type="checkbox" value="" id="box5" onclick="toggleInitialConsent(this)" checked>
+            <label class="form-check-label" for="box5">
+            My participation offers a contribution to the scientific research. I know that I will not receive any further reward or compensation for my participation.
+
+        </label>
+
+            
+                 <p>
+                      <strong id="rateRecommendation">(<span style="color:red;"> *</span> )</strong>
+    <input class="form-check-input" type="checkbox" value="" id="box6" onclick="toggleInitialConsent(this)" checked>
+        <label class="form-check-label" for="box6">
+                       I understand that my participation to this study is voluntary. I have the right to stop participating at any time. I do not have to give a reason for this and I know that it will not have any negative repercussions for me.
+
+        </label>
+
+           
+        <p>
+             <strong id="rateRecommendation">(<span style="color:red;"> *</span> )</strong>
+    <input class="form-check-input" type="checkbox" value="" id="box7" onclick="toggleInitialConsent(this)" checked>
+        <label class="form-check-label" for="box7">
+             My personal data (age, gender, education level, AI knowledge) will be processed in line with the General Data Protection Regulation (GDPR). Only the data that are strictly necessary to achieve the research objectives will be processed. My data will be kept confidential at all times throughout the study and the researchers will take measures to protect my privacy. For example, my personal data will be pseudonymized, meaning that my data can no longer be linked to me without the use of additional information that is only accessible to the researchers. I understand that my pseudonymized data may be reused for other scientific research and possibly for teaching or academic lectures. More information about the processing of my personal data can be found in the attached information letter.
+
+        </label>
+
+    </p>
+
+        <p></p>
+
+        <p>
+        In case of further questions about the research I know that I can contact:
+
+        Stijn Hendrix, stijn.hendrix@student.kuleuven, +32471901078
+
+        This study has been reviewed and approved by the Social and Societal Ethics Committee (SMEC) of KU Leuven (G-2024-7680; please use this number in any communication regarding the research). In case of complaints or other concerns with regard to the ethical aspects of this research I can contact SMEC: smec@kuleuven.be
+
+        I know that I can contact the individuals/organizations below if I would experience any discomfort or difficulties as a result of some of the subjects that were the topic of this research:
+        </p>
+
+         <strong id="rateRecommendation">(<span style="color:red;"> *</span> )</strong>
+        <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault" onclick="toggleConsent(this)">
+        <label class="form-check-label" for="flexCheckDefault">
+        <strong>I have read and understood the information in this document and I have received an answer to all my questions regarding this research. I give my consent to participate.
+    </strong>
+        </label>
+
+
+    <p></p><p>
+        <strong>Your email will be anonymized. In case you are unable to complete the study in one go, you can continue the study from where you left of by re-entering your previously used email address.</strong>
+    </p>
+
+    <form asp-controller="User" asp-action="Start" method="post">
+
+        <div class="form-group mb-3">
+            <label for="email">Email Address</label>
+            <input name="email" type="email" class="form-control" id="emailInput" placeholder="Enter your email address">
+        </div>
+    
+        <br />
+        <button type="submit" id="agreeBtn" class="btn btn-primary" disabled>Agree & continue</button>
+    </form>
+</div>
+
+<style>
+
+</style>
+
+    <script>
+
+        var currentTutorial = 0;
+        showTutorialPage();
+
+        var agreeAll = false;
+
+        var validEmail = false;
+        var validConsent = false;
+        var initialConsents = 7;
+        var lastConsent = 0;
+
+        function prevTutorial() {
+            if (currentTutorial > 0) {
+                currentTutorial--;
+            }
+            
+            showTutorialPage();
+        }
+
+        function nextTutorial() {
+            if (currentTutorial < 8) {
+                currentTutorial++;
+            }
+            showTutorialPage();
+        }
+
+        function showTutorialPage() {
+            for (var i = 0; i < 9; i++) {
+                var tutorialDiv = document.getElementById('tutorial' + i);
+                if (tutorialDiv) {
+                    tutorialDiv.style.display = 'none';
+                }
+            }
+            var showDiv = document.getElementById('tutorial' + currentTutorial);
+            if (showDiv) {
+                showDiv.style.display = 'block';
+            }
+
+            var prevElement = document.getElementById("prevButton");
+            prevElement.style.display = currentTutorial == 0 ? 'none' : '';
+
+            var nextElement = document.getElementById("nextButton");
+            nextElement.style.display = currentTutorial == 8 ? 'none' : '';
+        }
+
+        function toggleConsent(toggle) {
+            lastConsent += toggle.checked ? 1 : -1;
+            validConsent = initialConsents == 7 && lastConsent == 1;
+            updateContinueButton();
+        }
+
+        function toggleInitialConsent(toggle) {
+            initialConsents += toggle.checked ? 1 : -1;
+            validConsent = initialConsents == 7 && lastConsent == 1;
+            updateContinueButton();
+        }
+
+
+        function redirectToArtworkSelection() {
+            window.location.href = "/ArtworkSelection";
+        }
+
+        function isValidEmail(email) {
+          // Regular expression for a simple email validation
+          const emailRegex = /^[^\s@@]+@@[^\s@@]+\.[^\s@@]+$/;
+
+          // Test the email against the regex
+          return emailRegex.test(email);
+        }
+
+        function updateContinueButton() {
+            if (validEmail && validConsent) {
+                agreeBtn.removeAttribute('disabled');
+            } else {
+                agreeBtn.setAttribute('disabled', 'true');
+            }
+        }
+
+        document.getElementById('emailInput').addEventListener('input', function() {
+            var emailInput = this.value.trim();
+            var agreeBtn = document.getElementById('agreeBtn');
+            validEmail = isValidEmail(emailInput);
+
+            updateContinueButton();
+        });
+    </script>

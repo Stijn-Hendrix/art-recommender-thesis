@@ -1,0 +1,291 @@
+﻿@page
+@model frontend.Pages.SurveyCategoryExplanationsFinalModel
+@{
+	ViewData["Title"] = "Survey";
+}
+@{
+	Layout = "_SurveyLayout";
+}
+
+
+<div class="text-center">
+	<h1 class="display-4">Survey, almost there!</h1>
+
+
+	<div class="text-center">
+	@if (Model.CanFillInQuestionnaire)
+	{
+		<strong>Reminder</strong>
+		<p>
+			<ol>
+				<li><strong>In the following survey, explanation refers to the list of categories found next the recommendation.</strong></li>
+				<li><strong>The survey is about the previous 3 recommendations.</strong></li>
+			</ol>
+		</p>
+
+
+		<div class="wrap">
+			<form asp-controller="Survey" asp-action="SubmitLikert" method="post" enctype="multipart/form-data">
+
+				@{
+					int questionIndex = 0; // Initialize a counter for your questions
+				}
+				<p></p>
+
+				<h3 class="survey-section">Quality of explanations</h3>
+
+				@foreach (var question in QuestionnaireModel.HoffmanLikert)
+				{
+					<label class="statement">@question</label>
+					<ul class='likert'>
+						@foreach (var option in new List<string> { "Strongly disagree", "Disagree", "Neutral", "Agree", "Strongly agree" })
+						{
+							<li>
+								<input type="radio" name="responses[@questionIndex].Option" value="@option" @(option == "Neutral" ? "checked" : "")>
+								<input type="hidden" name="responses[@questionIndex].Question" value="@question">
+								<label>@option</label>
+							</li>
+						}
+					</ul>
+					questionIndex++; // Increment the question index for each question
+				}
+
+
+				@foreach (var question in QuestionnaireModel.AdditionalQuestionsForHoffman.Take(3))
+				{
+					<label class="statement">@question</label>
+					<ul class='likert'>
+						@foreach (var option in new List<string> { "Strongly disagree", "Disagree", "Neutral", "Agree", "Strongly agree" })
+						{
+							<li>
+								<input type="radio" name="responses[@questionIndex].Option" value="@option" @(option == "Neutral" ? "checked" : "")>
+								<input type="hidden" name="responses[@questionIndex].Question" value="@question">
+								<label>@option</label>
+							</li>
+						}
+					</ul>
+					questionIndex++; // Increment the question index for each question
+				}
+
+				<h3 class="survey-section">All Recommendations</h3>
+
+
+				@foreach (var question in QuestionnaireModel.AdditionalQuestionsForHoffman.Skip(3).Take(1))
+				{
+					<label class="statement">@question</label>
+					<ul class='likert'>
+						@foreach (var option in new List<string> { "Strongly disagree", "Disagree", "Neutral", "Agree", "Strongly agree" })
+						{
+							<li>
+								<input type="radio" name="responses[@questionIndex].Option" value="@option" @(option == "Neutral" ? "checked" : "")>
+								<input type="hidden" name="responses[@questionIndex].Question" value="@question">
+								<label>@option</label>
+							</li>
+						}
+					</ul>
+					questionIndex++; // Increment the question index for each question
+				}
+
+				<h3 class="survey-section">Feedback</h3>
+
+				@{
+					<label class="statement">@QuestionnaireModel.HoffmanOpenQuestions[0]</label>
+					<label for="basic-url"></label>
+					<div class="input-group">
+						<input type="hidden" name="responses[@questionIndex].Question" value="@QuestionnaireModel.HoffmanOpenQuestions[0]">
+						<input type="text" name="responses[@questionIndex].Option" class="form-control req" value="/">
+					</div>
+					questionIndex++;
+				}
+
+					<h3 class="survey-section">Personal information</h3>
+
+					@{
+						<label class="statement">Age</label>
+						<label for="basic-url"></label>
+						<div class="input-group">
+							<input type="hidden" name="responses[@questionIndex].Question" value="Age">
+							<input type="number" name="responses[@questionIndex].Option" class="form-control" min="18" max="65" value="18">
+						</div>
+						questionIndex++;
+					}
+
+					@{
+						<label class="statement">Education Level</label>
+						<label for="basic-url"></label>
+						<div class="input-group">
+							<input type="hidden" name="responses[@questionIndex].Question" value="Education Level">
+							<select name="responses[@questionIndex].Option" class="form-control">
+								<option value="High School">High School</option>
+								<option value="Some College">Some College</option>
+								<option value="Bachelor's Degree">Bachelor's Degree</option>
+								<option value="Master's Degree">Master's Degree</option>
+								<option value="Doctorate or Higher">Doctorate or Higher</option>
+							</select>
+						</div>
+						questionIndex++;
+					}
+
+
+					@{
+						<label class="statement">AI Knowledge</label>
+						<label for="basic-url"></label>
+						<div class="input-group">
+							<input type="hidden" name="responses[@questionIndex].Question" value="AI Knowledge">
+							<select name="responses[@questionIndex].Option" class="form-control">
+								<option value="No Knowledge">No Knowledge</option>
+								<option value="Basic Understanding">Basic Understanding (I understand fundamental AI concepts)</option>
+								<option value="Intermediate Knowledge">Intermediate Knowledge (I have studied AI formally or taken several courses.)</option>
+								<option value="Advanced Knowledge">Advanced Knowledge (I have a comprehensive understanding of multiple AI fields and techniques.)</option>
+								<option value="Expert">Expert</option>
+							</select>
+						</div>
+						questionIndex++;
+					}
+
+					@{
+						<label class="statement">Gender</label>
+						<label for="basic-url"></label>
+						<div class="input-group">
+							<input type="hidden" name="responses[@questionIndex].Question" value="Gender">
+							<select name="responses[@questionIndex].Option" class="form-control">
+								<option value="Female">Female</option>
+								<option value="Male">Male</option>
+								<option value="Other">Other</option>
+							</select>
+						</div>
+						questionIndex++;
+					}
+
+
+				<button type="submit" style="width:100%; margin-top: 5rem;" class=" submit btn btn-success btn-lg btn-block">
+					Submit answers!
+				</button>
+			</form>
+		</div>
+		}
+			else
+			{
+			<h2>You have not yet completed the recommendations!</h2>
+			<a href="/Recommendations" target="_blank">Click here to go to recommendation</a>
+			}
+
+
+	</div>
+
+	<script>
+
+		const inputs = document.querySelectorAll('.req');
+
+		// Add a change event listener to each input
+		inputs.forEach(input => {
+			input.addEventListener('change', function () {
+				// Check if the input is empty
+				if (this.value.trim() === '') {
+					// Change the value to "/"
+					this.value = '/';
+				}
+			});
+			// Prevent form submission with enter key in text fields
+			input.addEventListener('keydown', function (event) {
+				if (event.keyCode === 13) {
+					event.preventDefault();
+					return false;
+				}
+			});
+		});
+
+	</script>
+
+
+	<style>
+
+		h1.likert-header {
+			padding-left: 4.25%;
+			margin: 20px 0 0;
+		}
+
+		form .statement {
+			display: block;
+			font-size: 18px;
+			font-weight: bold;
+			padding: 50px 0 0 4.25%;
+			margin-bottom: 10px;
+		}
+
+		form .likert {
+			list-style: none;
+			width: 100%;
+			margin: 0;
+			padding: 0 0 35px;
+			display: block;
+			border-bottom: 2px solid #efefef;
+		}
+
+			form .likert:last-of-type {
+				border-bottom: 0;
+			}
+
+			form .likert:before {
+				content: '';
+				position: relative;
+				top: 11px;
+				left: 9.5%;
+				display: block;
+				background-color: #efefef;
+				height: 4px;
+				width: 78%;
+			}
+
+			form .likert li {
+				display: inline-block;
+				width: 19%;
+				text-align: center;
+				vertical-align: top;
+			}
+
+				form .likert li input[type=radio] {
+					display: block;
+					position: relative;
+					top: 0;
+					left: 50%;
+					margin-left: -6px;
+				}
+
+				form .likert li label {
+					width: 100%;
+				}
+
+		form .buttons {
+			margin: 30px 0;
+			padding: 0 4.25%;
+			text-align: right
+		}
+
+			form .buttons button {
+				padding: 5px 10px;
+				background-color: #67ab49;
+				border: 0;
+				border-radius: 3px;
+			}
+
+			form .buttons .clear {
+				background-color: #e9e9e9;
+			}
+
+			form .buttons .submit {
+				background-color: #67ab49;
+			}
+
+			form .buttons .clear:hover {
+				background-color: #ccc;
+			}
+
+			form .buttons .submit:hover {
+				background-color: #14892c;
+			}
+
+		.survey-section {
+			margin-top: 5rem;
+		}
+	</style>

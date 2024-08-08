@@ -1,0 +1,342 @@
+﻿@page "{selectionpage:int?}"
+@model frontend.Pages.ArtworkSelectionModel
+@{
+    ViewData["Title"] = "Home page";
+}
+@{
+    Layout = "_Layout";
+}
+
+<script src="https://d3js.org/d3.v4.js"></script>
+
+<div class="text-center">
+
+        <div class="display-6">Task</div>
+<div style="background-color:#f0f0f0; width:50%; border-radius: 10px; padding: 20px; margin: 10px auto; text-align: left;">
+
+
+
+    <div style="display: flex; align-items: center; justify-content: center;">
+            <input class="form-check-input" type="checkbox" value="" id="taskCheckbox" disabled @(Model.FavoritesCount >= Globals.TaskNames.Count() - 1 ? "checked" : "")>
+            <label class="d-flex" for="taskCheckbox" style="padding-left:1rem;">
+                <h4 id="taskName">@Model.TaskName</h4>
+                <h4 style="padding-left:0.5rem;" id="amount_of_favorites">(@Model.FavoritesCount/@(@Globals.TaskNames.Count() - 1))</h4>
+        </label>
+    </div>
+    <p id="taskDescription" style="text-align: center; "> @Model.TaskDescription</p>
+    <button id="nextButton" type="button" style="width:100%" class="btn btn-success btn-lg btn-block" onclick="redirectToRecommendation()">Continue to my recommendation!</button>
+</div>
+
+    <div class="display-6">Artworks</div>
+
+    @if (Model.RecommendationGenerated)
+    {
+        <h3>Recommendations have been generated, you can no longer change the artworks.</h3>
+    }
+    else
+    {
+
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-4">
+                    <div class="form-inline d-flex">
+                        <input id="searchBar" class="form-control form-control-sm mr-2" type="search" placeholder="Search for keywords" aria-label="Search" value="@Model.Query">
+                        <button type="button" style="margin-left:1rem;" class="btn btn-success btn-sm" onclick="search()">Search</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Modal -->
+        <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLongTitle">Info</h5>
+                    </div>
+                    <div class="modal-body">
+                        <img id="modalImage" src="" alt="Image Preview" style="width: 100%;">
+                        <p id="modalDescription">Extra info</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="$('#exampleModalCenter').modal('hide');">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="loadingModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLongTitle">Loading recommendations...</h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+
+
+        <div>
+            @foreach (var imageName in Model.ImageFileNames)
+            {
+                var isFavorite = Model.Favorites.Contains(imageName);
+
+                <div style="@(isFavorite ? "position: relative; display: inline-block; border: 7px solid red" : "position: relative; display: inline-block; border: 7px solid #000");  margin: 10px">
+                    <img src="~/dataset/@imageName" alt="@imageName" style="width: 200px; height: 200px;">
+                    <div style="position: absolute; bottom: 0; right: 0; display: flex; flex-direction: row;">
+
+                        <img src="~/images/favorite.png" alt="Button 1" style="@(isFavorite ? "filter: grayscale(0%); width: 30px; height: 30px; cursor: pointer;" : "filter: grayscale(50%); width: 30px; height: 30px; cursor: pointer;")" onclick="addFavorite(this, '@imageName')">
+                        <img src="~/images/info.png" alt="Button 2" style="width: 30px; height: 30px; cursor: pointer;" data-toggle="modal" data-target="#exampleModalCenter" onclick="showImageModal('@imageName')">
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="horizontal-links">
+
+            @{
+
+                if (Model.CurrentPage > 1)
+                {
+                    <button type="button" class="btn btn-link" onclick="search(@(Model.CurrentPage - 1))">Previous</button>
+                }
+
+
+                if (Model.TotalPages > 5)
+                {
+                    if (Model.CurrentPage > 3)
+                    {
+                        if (Model.CurrentPage - 3 == 1)
+                        {
+                            <button type="button" class="btn btn-link" onclick="search(1)">1</button>
+                        }
+                        else
+                        {
+                            <button type="button" class="btn btn-link" onclick="search(1)">1</button>
+                            <div>...</div>
+                        }
+                    }
+
+                    for (int i = Math.Max(1, Model.CurrentPage - 2); i <= Model.CurrentPage - 1; i++)
+                    {
+                        <button type="button" class="btn btn-link" onclick="search(@i)">@i</button>
+                    }
+
+                    <button type="button" class="btn btn-link" onclick="search(@Model.CurrentPage)"><strong>@Model.CurrentPage</strong></button>
+
+                    for (int i = Math.Max(1, Model.CurrentPage + 1); i <= Math.Min(Model.CurrentPage + 2, Model.TotalPages); i++)
+                    {
+                        <button type="button" class="btn btn-link" onclick="search(@i)">@i</button>
+                    }
+
+                    if (Model.CurrentPage < Model.TotalPages - 2)
+                    {
+                        if (Model.CurrentPage == Model.TotalPages - 3)
+                        {
+                            <button type="button" class="btn btn-link" onclick="search(@Model.TotalPages)">@Model.TotalPages</button>
+                        }
+                        else
+                        {
+                            <div>...</div>
+                            <button type="button" class="btn btn-link" onclick="search(@Model.TotalPages)">@Model.TotalPages</button>
+                        }
+                    }
+                }
+                else
+                {
+                    for (int i = 1; i < Model.CurrentPage; i++)
+                    {
+                        <button type="button" class="btn btn-link" onclick="search(@i)">@i</button>
+                    }
+
+                    <button type="button" class="btn btn-link" onclick="search(@Model.CurrentPage)"><strong>@Model.CurrentPage</strong></button>
+
+                    for (int i = Model.CurrentPage + 1; i <= Model.TotalPages; i++)
+                    {
+                        <button type="button" class="btn btn-link" onclick="search(@i)">@i</button>
+                    }
+                }
+
+                if (Model.CurrentPage < Model.TotalPages)
+                {
+                    <button type="button" class="btn btn-link" onclick="search(@(Model.CurrentPage + 1))">Next</button>
+                }
+            }
+        </div>
+    }
+
+    
+
+</div>
+
+
+<script>
+
+
+    function redirectToRecommendation() {
+        $('#loadingModal').modal('show');
+        window.location.href = "/Recommendations";
+    }
+
+    function search(page) {
+        var querry = document.getElementById("searchBar").value;
+
+        console.log(page);
+
+        var lastquerry = "@Model.Query";
+
+        var selectionPage = page;
+
+        if (querry !== lastquerry) {
+            selectionPage = 1;
+        }
+        console.log(querry);
+
+        if(querry === "") {
+            window.location.href = "/ArtworkSelection?selectionpage=" + selectionPage;
+        }
+        else {
+            window.location.href = "/ArtworkSelection?selectionpage=" + selectionPage + "&query=" + querry;
+        }
+    }
+
+    function showImageModalOld(imageName) {
+        // Set the source of the modal image based on the clicked image
+        var modalImage = document.getElementById('modalImage');
+        modalImage.src = '/dataset/' + imageName;
+
+        // Show the modal
+        $('#exampleModalCenter').modal('show');
+    }
+
+
+    function showImageModal(imageName) {
+        // Use AJAX to fetch image data from the server
+        $.ajax({
+            url: '/api/artworks/GetImageDescription/' + imageName,
+            type: 'GET',
+            success: function (data) {
+                // Set the source of the modal image based on the retrieved image data
+                var modalImage = document.getElementById('modalImage');
+                modalImage.src = '/dataset/' + imageName;
+
+                var modalDescription = document.getElementById('exampleModalLongTitle');
+                modalDescription.innerHTML = data[0] + " - " + data[1];
+
+                 var modalDescription = document.getElementById('modalDescription');
+                modalDescription.innerHTML = data[2];
+         
+
+                // Show the modal
+                $('#exampleModalCenter').modal('show');
+            },
+            error: function (error) {
+                console.error('Error fetching image data:', error);
+            }
+        });
+    }
+
+    let amountOfFavorites = @Model.FavoritesCount;
+    let favoritesNeeded = @(Globals.FavoritesNeeded);
+    updateTaskState();
+
+    console.log(favoritesNeeded);
+
+    function addFavorite(button, imageName) {
+
+        var flowTest = "@(Model.RecommendationGenerated)";
+
+        if (flowTest !== "False") {
+            return;
+        }
+
+        // Use AJAX to fetch image data from the server
+        $.ajax({
+            url: '/api/artworks/AddFavorite/' + imageName,
+            type: 'POST',
+
+            success: function () {
+                $.ajax({
+                    url: '/api/artworks/FavoritesCount/',
+                    type: 'GET',
+                    success: function (data) {
+                        amountOfFavorites = data;
+                        
+                        updateTaskState();
+                    }
+                });
+            }
+        });
+
+        if (button.style.filter==="grayscale(0%)") {
+            button.style.filter = "grayscale(50%)";
+                    button.closest('div').parentElement.style.border = "7px solid #000"; // Set border to black when not a favorite
+        }
+        else {
+            button.style.filter = "grayscale(0%)";
+                    button.closest('div').parentElement.style.border = "7px solid red"; // Set border to red when a favorite
+        }
+    }
+
+    function updateTaskState() {
+        document.getElementById("amount_of_favorites").innerHTML = `(${amountOfFavorites}/${favoritesNeeded})`;
+
+        if (amountOfFavorites >= favoritesNeeded) {
+            document.getElementById("taskCheckbox").setAttribute("checked", true);
+            document.getElementById("taskName").classList.add("completed");
+            document.getElementById("taskDescription").classList.add("hide");
+            document.getElementById("nextButton").removeAttribute("disabled");
+        }
+        else {
+            document.getElementById("taskCheckbox").removeAttribute("checked");
+            document.getElementById("taskName").classList.remove("completed");
+            document.getElementById("taskDescription").classList.remove("hide");
+            document.getElementById("nextButton").setAttribute("disabled", true);
+        }
+    }
+
+</script>
+
+
+<style>
+    .horizontal-links {
+        white-space: nowrap;
+    }
+
+    .horizontal-links a, .horizontal-links div {
+        display: inline-block;
+        margin-right: 10px; /* Adjust the spacing as needed */
+        text-decoration: none; /* Optional: remove underlines */
+    }
+
+    .dropdown-container {
+        display: flex;
+         justify-content: center; 
+    }
+
+    .dropdown {
+        margin-right: 10px; /* Optional: Adjust spacing between dropdowns */
+    }
+
+    .enabled-label {
+        color: black; /* Or any color you prefer */
+        opacity: 1; /* Ensure the label is fully opaque */
+    }
+
+    .completed {
+      text-decoration: line-through;
+    }
+
+    .hide {
+        display:none;
+    }
+
+    .btn-link {
+        text-decoration: none; /* Removes underline */
+    }
+
+
+</style>

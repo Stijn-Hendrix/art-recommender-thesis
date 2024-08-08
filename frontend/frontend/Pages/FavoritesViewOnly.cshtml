@@ -1,0 +1,93 @@
+﻿
+@page
+@model frontend.Pages.FavoritesViewOnlyModel
+@{
+    ViewData["Title"] = "Favorites";
+}
+
+@{
+    Layout = "_RecommendationLayout";
+}
+
+
+<div class="text-center">
+    <h1 class="display-4">Favorites</h1>
+
+
+
+    <!-- Modal -->
+    <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLongTitle">Info</h5>
+                </div>
+                <div class="modal-body">
+                    <img id="modalImage" src="" alt="Image Preview" style="width: 100%;">
+                    <p id="modalDescription">Extra info</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="$('#exampleModalCenter').modal('hide');">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <div>
+        @foreach (var imageName in Model.ImageFileNames)
+        {
+            <div style="position: relative; display: inline-block; border: 7px solid #000;  margin: 10px">
+                <img src="~/dataset/@imageName" alt="@imageName" style="width: 200px; height: 200px;">
+
+                <div style="position: absolute; bottom: 0; right: 0; display: flex; flex-direction: row;">
+                    <img src="~/images/info.png" alt="Button 2" style="width: 30px; height: 30px; cursor: pointer;" data-toggle="modal" data-target="#exampleModalCenter" onclick="showImageModal('@imageName')">
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<script type="text/javascript">
+    document.getElementById("similarBtn").onclick = function () {
+        location.href = "./Recommendations";
+    };
+
+
+    function showImageModalOld(imageName) {
+        // Set the source of the modal image based on the clicked image
+        var modalImage = document.getElementById('modalImage');
+        modalImage.src = '/dataset/' + imageName;
+
+        // Show the modal
+        $('#exampleModalCenter').modal('show');
+    }
+
+
+    function showImageModal(imageName) {
+        // Use AJAX to fetch image data from the server
+        $.ajax({
+            url: '/api/artworks/GetImageDescription/' + imageName,
+            type: 'GET',
+            success: function (data) {
+                // Set the source of the modal image based on the retrieved image data
+                var modalImage = document.getElementById('modalImage');
+                modalImage.src = '/dataset/' + imageName;
+
+                var modalDescription = document.getElementById('exampleModalLongTitle');
+                modalDescription.innerHTML = data[0] + " - " + data[1];
+
+                var modalDescription = document.getElementById('modalDescription');
+                modalDescription.innerHTML = data[2];
+
+
+                // Show the modal
+                $('#exampleModalCenter').modal('show');
+            },
+            error: function (error) {
+                console.error('Error fetching image data:', error);
+            }
+        });
+    }
+</script>

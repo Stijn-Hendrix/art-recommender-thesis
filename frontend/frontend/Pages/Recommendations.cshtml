@@ -1,0 +1,1090 @@
+﻿@page
+@model frontend.Pages.RecommendationsModel
+@{
+    ViewData["Title"] = "Recommendation";
+}
+
+@{
+    Layout = "_RecommendationLayout";
+}
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+<script src="https://d3js.org/d3.v4.js"></script>
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLongTitle">Info</h5>
+            </div>
+            <div class="modal-body">
+                <img id="modalImage" src="" alt="Image Preview" style="width: 100%;">
+                <p id="modalDescription">Extra info</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="$('#exampleModalCenter').modal('hide');">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="text-center">
+
+    @if (Model.FavoritesCount >= Globals.FavoritesNeeded)
+    {
+        if (Model.StudyFinished == false)
+        {
+            <div class="row">
+                <!-- Left column for the image -->
+                <div class="col-4 d-flex align-items-center justify-content-center text-center">
+                    <div class="image-container">
+                        <h3 id="recommendedTitle">Recommended (1/"@Model.RecommendationCount")</h3>
+                        <img id="recommendationImage" src="~/dataset/@Model.ImageFileName[Model.RecommendationIndexOffset]" alt="@Model.ImageFileName[Model.RecommendationIndexOffset]" style="width: 100%; height: 100%; border: 7px solid #000;">
+                        <div class="image-actions">
+                            <img src="~/images/info.png" alt="Button 2" style="width: 30px; height: 30px; cursor: pointer; margin-left: 5px; margin-top: 1rem;" data-toggle="modal" data-target="#exampleModalCenter" onclick="showImageModal()">
+                            <div class="justify-content-center">
+                                <i class="rating__star far fa-star" onclick="setRating(1)"></i>
+                                <i class="rating__star far fa-star" onclick="setRating(2)"></i>
+                                <i class="rating__star far fa-star" onclick="setRating(3)"></i>
+                                <i class="rating__star far fa-star" onclick="setRating(4)"></i>
+                                <i class="rating__star far fa-star" onclick="setRating(5)"></i>
+                            </div>
+                            <strong id="rateRecommendation">(<span style="color:red;"> *</span> ) rate recommendation</strong>
+                        </div>
+
+                        <div>
+                            <button type="button" class="btn btn-light" id="prevRec" style="margin-top: 1rem;" onclick="PreviousRecommendation()">&laquo; Previous</button>
+                            <button type="button" class="btn btn-primary" id="nextRec" style="margin-top: 1rem;" onclick="NextRecommendation()">Next &raquo;</button>
+                        </div>
+                    </div>
+                </div>
+
+
+                <!-- Right column for the charts -->
+                <div class="col-8">
+                    <div class="row">
+                        <div class="col">
+                            @if (@Model.DoRanking)
+                            {
+                                <h4>Explanation: The below categories show similarities between recommendation and favorites... Please rank each category from most (Top) to least (Bottom) important to you for understanding the recommendation system.</h4>
+                            }
+                            else {
+                                <h4>Explanation: The below category shows similarities between recommendation and favorites... Please rate the category by how relevant and well it explains the systems recommendation to you (thumbs up/down).</h4>
+                            }
+                        </div>
+
+                        <div class="col-2">
+                        </div>
+                    </div>
+                    <div class="col" id="charts">
+                    </div>
+                    
+                </div>
+            </div>
+
+            if (Model.SurveyState == SurveyState.Finish)
+            {
+                <button id="nextButton" type="button" class="btn btn-success btn-lg btn-block" onclick="finishStudy()" style="margin-top: 2rem;">
+                    <div id="rateRecommendation">(<span style="color:red;"> *</span> ) rate all recommendations</div>
+                </button>
+            }
+            else
+            {
+                <button id="nextButton" type="button" class="btn btn-success btn-lg btn-block" onclick="nextIteration()" style="margin-top: 2rem;">
+                    <div id="rateRecommendation">(<span style="color:red;"> *</span> ) rate all recommendations</div>
+                        <div id="rateRecommendation">(<span style="color:red;"> *</span> ) rate all explanation relevancies (thumbs up/down)</div>
+                </button>
+            }
+        }
+        else
+        {
+      
+        }
+    }
+    else
+    {
+        <h3>Please add artworks to your favorites to find recommendations!</h3>
+        <a href="/ArtworkSelection">To artworks</a>
+    }
+
+  
+
+
+</div>
+
+<style>
+
+    .previous {
+      background-color: #f1f1f1;
+      color: black;
+    }
+
+    .next {
+        background-color: #3B6F9E;
+      color: white;
+    }
+
+    .round {
+      border-radius: 50%;
+    }
+
+    .rating {
+        width: 180px;
+    }
+
+    .rating__star {
+        cursor: pointer;
+        color: #dabd18b2;
+    }
+
+    .category_help {
+        font-size: 0.9rem;
+    }
+
+</style>
+
+<script>
+
+ 
+
+</script>
+
+<script>
+
+    
+    var relevancies;
+
+    var recommendationIndex = @Model.RecommendationIndexOffset;
+    const recommendationsCount =  @Globals.RecommmendationsCount;
+    var recommendationIndexMin = @Model.RecommendationIndexOffset;
+    var recommendationIndexMax = (@Model.RecommendationIndexOffset + @Globals.RecommendationsPerType - 1);
+
+    var currentRating = 0;
+
+    var mouseEnterTime = undefined;
+    var timeLookatRecommendationStart = Date.now();
+
+    function nextIteration() {
+        pushUpdateLookAtRecommendationAndNext(recommendationIndex, "/SurveyCategoryExplanations");
+       
+    }
+
+    function finishStudy() {
+        pushUpdateLookAtRecommendationAndNext(recommendationIndex, "/SurveyCategoryExplanationsFinal");
+    }
+
+
+    function loadRating() {
+        currentRating = 0;
+        $.ajax({
+            url: '/api/artworks/GetRating/' + recommendationIndex,
+            type: 'GET',
+            success: function (data) {
+                currentRating = data;
+                setRating(currentRating);
+            }
+        });
+    }
+
+    function checkRatings() {
+        var requests = [];
+
+        // Create and store all AJAX requests
+        for (var i = 0; i < recommendationsCount; i++) {
+            requests.push($.ajax({
+                url: '/api/artworks/GetRating/' + i,
+                type: 'GET'
+            }));
+        }
+
+        // When all AJAX requests are complete
+        $.when.apply($, requests).then(function () {
+            // arguments is an array of responses
+            // Each response is [data, textStatus, jqXHR], hence data is at index 0
+
+            var nextElement = document.getElementById("nextButton");
+              document.getElementById("nextRec").disabled = false;
+            
+             var canContinue = true;
+
+            for (var i = recommendationIndexMin; i <= recommendationIndexMax; i++) {
+                var data = arguments[i][0]; // Assuming your API returns the rating directly
+                if (data === 0) { // If any rating is 0, disable the button and return
+                    canContinue = false;
+                }
+
+                if (recommendationIndex === i) {
+
+                    if (data === 0) {
+                        document.getElementById("nextRec").disabled = true;
+                    }
+
+                    document.getElementById("rateRecommendation").hidden = data !== 0;
+                }
+            }
+
+            var ranking = "@Model.DoRanking" === "True";
+            if (!ranking) {
+                for (var i = recommendationIndexMin; i <= recommendationIndexMax; i++) {
+                    var missingThumbs = false;
+                    for (var key in relevancies[i]) {
+                        if (relevancies[i].hasOwnProperty(key)) { // This check is important to skip properties from the prototype chain
+                            if (relevancies[i][key] === 0) {
+                                missingThumbs = true;
+                                if (recommendationIndex === i) {
+                                    document.getElementById("nextRec").disabled = true;
+                                }
+                            }
+                        }
+                    }
+                    if (missingThumbs) {
+                        canContinue = false;
+                    }
+                }
+            }
+
+            if (canContinue === false) {
+                nextElement.disabled = true;
+                return;
+            }
+            
+
+            // If none of the ratings are 0, enable the button
+            var nextElement = document.getElementById("nextButton");
+            nextElement.disabled = false;
+            nextElement.innerHTML = "Continue!"
+        });
+    }
+
+    document.getElementById("nextButton").setAttribute("disabled", checkRatings());
+
+    const ratingStars = [...document.getElementsByClassName("rating__star")];
+
+    function setRating(rating) {
+        document.getElementById("rateRecommendation").hidden = rating !== 0;
+
+        for (var i = 0; i < rating; i++) {
+            ratingStars[i].className = "rating__star fas fa-star";
+        }
+
+        for (var i = rating; i < 5; i++) {
+            ratingStars[i].className = "rating__star far fa-star";
+        }
+
+        if (rating !== currentRating) {
+
+            $.ajax({
+                url: '/api/artworks/SetRating/' + recommendationIndex + "?rating=" + rating,
+                type: 'POST',
+                complete: function() {
+                    // This function is called after the AJAX request is complete,
+                    // regardless of whether it succeeded or failed.
+                    checkRatings();
+                }
+            });
+        }
+    }
+
+
+    const recommendations = @Model.ImageFileImportances.Count;
+
+    UpdateButtonState();
+
+
+    collectRelevancies(
+      () => {
+                    console.log(relevancies);
+                    
+                    loadRating();
+                    checkRatings();
+                    ShowRecommendation(recommendationIndex);
+    });
+
+
+
+    function NextRecommendation() {
+        pushUpdateLookAtRecommendation(recommendationIndex);
+        if (recommendationIndex < recommendationIndexMax) {
+            recommendationIndex += 1;
+        }
+        UpdateButtonState();
+        
+
+        ShowRecommendation(recommendationIndex);
+        loadRating();
+        checkRatings();
+    }
+
+    function PreviousRecommendation() {
+        pushUpdateLookAtRecommendation(recommendationIndex);
+        if (recommendationIndex > recommendationIndexMin) {
+            recommendationIndex -= 1;
+        }
+        UpdateButtonState();
+
+
+        ShowRecommendation(recommendationIndex);
+        loadRating();
+        checkRatings();
+    }
+
+    function UpdateButtonState() {
+        document.getElementById("nextRec").style.display= recommendationIndex == recommendationIndexMax ? 'none' : '';
+        document.getElementById("prevRec").style.display = recommendationIndex == recommendationIndexMin ? 'none': '';
+    }
+
+    function ShowRecommendation(index) {
+
+        console.log(recommendations);
+        if (recommendations !== 0) {
+
+            const ImageFileNames = @Html.Raw(Json.Serialize(Model.ImageFileName));
+
+            document.getElementById('recommendationImage').src = "/dataset/" + ImageFileNames[index];
+            document.getElementById('recommendationImage').alt = ImageFileNames[index];
+            document.getElementById('recommendedTitle').innerText = "Recommended (" + (index + 1) + "/@Model.RecommendationCount)";
+    
+
+            const AllArtstyleEqualsInFavorites = @Html.Raw(Json.Serialize(Model.ArtstyleEqualsInFavorites));
+            const AllThemeEqualsInFavorites = @Html.Raw(Json.Serialize(Model.ThemeEqualsInFavorites));
+
+            const AllRecommendationArtstyle = @Html.Raw(Json.Serialize(Model.ImageFileArtstyle));
+            const AllRecommendationTheme = @Html.Raw(Json.Serialize(Model.ImageFileTheme));
+            const AllRecommendationDescription = @Html.Raw(Json.Serialize(Model.ImageFileDescription));
+
+            const rankings = @Html.Raw(Json.Serialize(Model.CategoryRankings));
+            const categories = @Html.Raw(Json.Serialize(Model.Categories));
+
+            const artstyleEqualsInFavorites = AllArtstyleEqualsInFavorites[index];
+            const themeEqualsInFavorites = AllThemeEqualsInFavorites[index];
+
+            var recommendationArtstyle = AllRecommendationArtstyle[index];
+            var recommendationTheme = AllRecommendationTheme[index];
+            var recommendationDescription = AllRecommendationDescription[index];
+
+            const allImportanceData = @Html.Raw(Json.Serialize(Model.ImageFileImportances));
+            const importanceData = allImportanceData[index];
+
+            var importanceArray = Object.entries(importanceData).map(([key, value]) => {
+                return { name: key, importance: value.importance, factors: value.factors };
+            });
+
+            importanceArray = importanceArray.filter(item => item.importance > 0);
+            importanceArray.sort((a, b) => b.importance - a.importance);
+
+            var sortedCategories = []
+            var sortedCategoriesImportances = []
+
+            for (let i = 0; i < categories[index].length; i++) {
+                sortedCategories[rankings[index][i]] = categories[index][i];
+                sortedCategoriesImportances[rankings[index][i]] = importanceArray.find(item => item.name === categories[index][i]);
+            }
+
+            /*
+            console.log(importanceArray);
+            */
+
+
+            const chartContainer = d3.select("#charts");
+            chartContainer.html("");
+
+            const color_mapping = {
+                "Colors": "#F86A6A",
+                "Artstyle": "#9C9E3B",
+                "Description": "#BA4886",
+                "Theme": "#3B6F9E",
+                "Objects": "#A8CF81",
+                "Semantics": "#BB81CF"
+            }
+
+            function barchart_explanation(name, item, index) {
+                const chartDiv = chartContainer.append("div")
+                    .style("padding-bottom", "20px"); // Space between SVGs
+
+
+                // Extract factor names and their values for bars
+                const factors = Object.entries(item.factors).map(([key, value]) => {
+                    return { factorName: key, value: value };
+                });
+                // Setup dimensions and margins for the chart
+                const margin = { top: 40, right: 20, bottom: 30, left: 100 };
+                const width = 500 - margin.left - margin.right;
+                const height = factors.length * 40 + 20; // Adjust height based on number of factors
+
+                // Create an SVG element for each item's chart
+                const svg = chartContainer.append("svg")
+                    .attr("width", width + margin.left + margin.right)
+                    .attr("height", height + margin.top + margin.bottom)
+                    .style("background-color", "#f0f0f0")
+                    .on("mouseenter", function() {
+                        mouseEnterTime = Date.now();
+                    })
+                    .on("mouseout", function() {
+                        pushMouseHover(name);
+                    })
+                    .append("g")
+                    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+
+
+                let relevant = relevancies[recommendationIndex][name];
+
+                var buttonUp = chartContainer.append("button");
+                var buttonDown = chartContainer.append("button");
+                buildUpButton(buttonUp, name, margin, height, buttonDown, relevant);
+                buildDownButton(buttonDown, name, margin, height, buttonUp, relevant);
+
+                // Scaling for the bars
+                const x = d3.scaleLinear()
+                    .domain([0, d3.max(factors, d => d.value)])
+                    .range([0, width]);
+
+
+                // Create bars
+                svg.selectAll(".bar")
+                    .data(factors)
+                    .enter().append("rect")
+                    .attr("class", "bar")
+                    .attr("width", d => x(d.value))
+                    .attr("y", (d, i) => i * 40)
+                    .attr("height", 30)
+                    .attr("fill", color_mapping[item.name]);
+
+                // Create labels for the bars
+                svg.selectAll(".label")
+                    .data(factors)
+                    .enter().append("text")
+                    .attr("class", "label")
+                    .attr("x", -5) // A bit of padding from the bar end
+                    .attr("y", (d, i) => i * 40 + 20)
+                    .attr("text-anchor", "end")
+                    .text(d => d.factorName);
+
+                // Add a title to each chart
+                svg.append("text")
+                    .attr("x", (width / 2 - item.name.length * 5))
+                    .attr("y", -margin.top / 2 + 5) // Position above the bars
+                    .attr("text-anchor", "middle")
+                    .attr("class", "h4")
+                    .text(item.name); // Use the name from the importanceArray item as the title
+
+
+                svg.append("text")
+                    .attr("x",(width / 2 - item.name.length * 5))
+                    .attr("y", height + margin.bottom * 0.5) // Position above the bars
+                    .attr("text-anchor", "middle")
+                    .attr("class", "category_help")
+                    .text("(*) Bars refer to relative importance to other bars"); // Use the name from the importanceArray item as the title
+
+
+            }
+
+            function theme_explanation(name, item, index) {
+                const chartDiv = chartContainer.append("div")
+                    .style("padding-bottom", "20px"); // Space between SVGs
+
+
+
+                // Setup dimensions and margins for the chart
+                const margin = { top: 40, right: 20, bottom: 40, left: 100 };
+                const width = 500 - margin.left - margin.right;
+                const height = 40; // Adjust height based on number of factors
+
+                const recommendationDescription = "You've been recommended a theme that matches " + themeEqualsInFavorites + " of your favorites, specifically " + recommendationTheme + ".";
+                const lines = recommendationDescription.match(/.{1,40}( |$)/g); // Split into lines
+
+
+                // Create an SVG element for each item's chart
+                const svg = chartContainer.append("svg")
+                    .attr("width", width + margin.left + margin.right)
+                    .attr("height", margin.top + margin.bottom + lines.length * 20)
+                    .style("background-color", "#f0f0f0")
+                    .on("mouseenter", function() {
+                        mouseEnterTime = Date.now();
+                    })
+                    .on("mouseout", function() {
+                        pushMouseHover(name);
+                    })
+                    .append("g")
+                    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+                let relevant = relevancies[recommendationIndex][name];
+
+                var buttonUp = chartContainer.append("button");
+                var buttonDown = chartContainer.append("button");
+                buildUpButton(buttonUp, name, margin, height, buttonDown, relevant);
+                buildDownButton(buttonDown, name, margin, height, buttonUp, relevant);
+
+                // Add a title to each chart
+                svg.append("text")
+                    .attr("x", (width / 2 - item.name.length * 5))
+                    .attr("y", -margin.top / 2 + 5) // Position above the bars
+                    .attr("text-anchor", "middle")
+                    .attr("class", "h4")
+                    .text(item.name); // Use the name from the importanceArray item as the title
+
+
+
+                lines.forEach((line, lineIndex) => {
+                    // Append a new 'text' element for each line to keep words in the same line next to each other
+                    let lineText = svg.append("text")
+                        .attr("x", (width / 2 - item.name.length * 4))
+                        .attr("y", -margin.top / 2 + 45 + (lineIndex * 20)) // Adjust the Y position for each new line
+                        .attr("text-anchor", "middle");
+
+                    line.split(" ").forEach((word, wordIndex) => {
+                        let cleanWord = word.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, "");
+                        let isHighlight = cleanWord === recommendationTheme;
+
+                        lineText.append("tspan")
+                            .attr("fill", isHighlight ? "#00796B" : "#000000")
+                            .style("font-weight", isHighlight ? "bold" : "normal")
+                            .text(word + " "); // Add a space after each word for separation
+                    });
+                });
+            }
+
+            function artstyle_explanation(name, item, index) {
+                const chartDiv = chartContainer.append("div")
+                    .style("padding-bottom", "20px"); // Space between SVGs
+
+
+
+                // Setup dimensions and margins for the chart
+                const margin = { top: 40, right: 20, bottom: 40, left: 100 };
+                const width = 500 - margin.left - margin.right;
+                const height = 40; // Adjust height based on number of factors
+
+                const recommendationDescription = "You've been recommended an art style that matches the style of " + artstyleEqualsInFavorites + " of your favorites, specifically " + recommendationArtstyle + ".";
+                const lines = recommendationDescription.match(/.{1,40}( |$)/g); // Split into lines
+
+
+                // Create an SVG element for each item's chart
+                const svg = chartContainer.append("svg")
+                    .attr("width", width + margin.left + margin.right)
+                    .attr("height", margin.top + margin.bottom + lines.length * 20)
+                    .style("background-color", "#f0f0f0")
+                    .on("mouseenter", function() {
+                        mouseEnterTime = Date.now();
+                    })
+                    .on("mouseout", function() {
+                        pushMouseHover(name);
+                    })
+                    .append("g")
+                    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+                let relevant = relevancies[recommendationIndex][name];
+                
+                var buttonUp = chartContainer.append("button");
+                var buttonDown = chartContainer.append("button");
+                buildUpButton(buttonUp, name, margin, height, buttonDown, relevant);
+                buildDownButton(buttonDown, name, margin, height, buttonUp, relevant);
+
+                // Add a title to each chart
+                svg.append("text")
+                    .attr("x", (width / 2 - item.name.length * 5))
+                    .attr("y", -margin.top / 2 + 5) // Position above the bars
+                    .attr("text-anchor", "middle")
+                    .attr("class", "h4")
+                    .text(item.name); // Use the name from the importanceArray item as the title
+
+
+                lines.forEach((line, lineIndex) => {
+                    // Append a new 'text' element for each line to keep words in the same line next to each other
+                    let lineText = svg.append("text")
+                        .attr("x", (width / 2 - item.name.length * 4))
+                        .attr("y", -margin.top / 2 + 45 + (lineIndex * 20)) // Adjust the Y position for each new line
+                        .attr("text-anchor", "middle");
+
+                    line.split(" ").forEach((word, wordIndex) => {
+                        let cleanWord = word.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, "");
+                        let isHighlight = cleanWord === recommendationArtstyle;
+
+                        lineText.append("tspan")
+                            .attr("fill", isHighlight ? "#1616ab" : "#000000")
+                            .style("font-weight", isHighlight ? "bold" : "normal")
+                            .text(word + " "); // Add a space after each word for separation
+                    });
+                });
+
+
+            }
+
+            function description_explanation(name, item, index) {
+                const chartDiv = chartContainer.append("div")
+                    .style("padding-bottom", "20px"); // Space between SVGs
+
+                console.log("test" + item);
+
+                // Extract factor names and their values for bars
+                const factors = Object.entries(item.factors).map(([key, value]) => {
+                    return { factorName: key, value: value };
+                });
+                // Setup dimensions and margins for the chart
+                const margin = { top: 40, right: 20, bottom: 30, left: 100 };
+                const width = 500 - margin.left - margin.right;
+
+                const lines = recommendationDescription.match(/.{1,50}( |$)/g); // Split into lines
+
+                const height = factors.length * 40 + 80; // Adjust height based on number of factors
+
+                // Create an SVG element for each item's chart
+                const svg = chartContainer.append("svg")
+                    .attr("width", width + margin.left + margin.right)
+                    .attr("height", margin.top + margin.bottom + lines.length * 20 + 50)
+                    .style("background-color", "#f0f0f0")
+                    .on("mouseenter", function() {
+                        mouseEnterTime = Date.now();
+                    })
+                    .on("mouseout", function() {
+                        pushMouseHover(name);
+                    })
+                    .append("g")
+                    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+
+
+                let relevant = relevancies[recommendationIndex][name];
+
+                var buttonUp = chartContainer.append("button");
+                var buttonDown = chartContainer.append("button");
+                buildUpButton(buttonUp, name, margin, height, buttonDown, relevant);
+                buildDownButton(buttonDown, name, margin, height, buttonUp, relevant);
+
+                const textFieldY = -margin.top / 2 + 25; // Adjust this to place it under the title
+
+
+                // Add a title to each chart
+                svg.append("text")
+                    .attr("x", (width / 2 - item.name.length * 4))
+                    .attr("y", -margin.top / 2 + 5) // Position above the bars
+                    .attr("text-anchor", "middle")
+                    .attr("class", "h4")
+                    .text(item.name); // Use the name from the importanceArray item as the title
+
+                                // Add a title to each chart
+                svg.append("text")
+                    .attr("x", (width / 2 - item.name.length * 4))
+                    .attr("y", (margin.top + margin.bottom + lines.length * 20)) // Position above the bars
+                    .attr("text-anchor", "middle")
+                    .attr("class", "category_help")
+                    .text("(*) Highlighted words are important to the recommendation"); // Use the name from the importanceArray item as the title
+
+
+
+                // Remove the second forEach loop that was causing issues
+                const textElement = svg.append("text")
+                    .attr("x", (width / 2 - item.name.length * 5))
+                    .attr("y", -margin.top / 2 + 45) // Initial Y position for the first line
+                    .attr("text-anchor", "middle");
+
+
+                const totalImportance =
+                    Object.entries(importanceData.Description.factors).map(([key, value]) => {
+                        return value;
+                    }).reduce((a, b) => a + b, 0);
+
+                const normalizedImportances =
+                    Object.entries(importanceData.Description.factors).map(([key, value]) => {
+                        return { name: key, importance: value / totalImportance }
+                    });
+
+
+                lines.forEach((line, lineIndex) => {
+                    // Append a new 'text' element for each line to keep words in the same line next to each other
+                    let lineText = svg.append("text")
+                        .attr("x", (width / 2 - item.name.length * 4))
+                        .attr("y", -margin.top / 2 + 45 + (lineIndex * 20)) // Adjust the Y position for each new line
+                        .attr("text-anchor", "middle");
+
+                    line.split(" ").forEach((word, wordIndex) => {
+                        let cleanWord = word.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, "");
+                        let isHighlight = normalizedImportances.some(function (item) {
+                            return item.name === cleanWord;
+                        });
+
+                        var importance = 0;
+
+                        if (isHighlight) {
+                            importance = normalizedImportances.find(function (obj) {
+                                return obj.name === cleanWord;
+                            }).importance + 0.3;
+
+                            if (importance > 1) {
+                                importance = 1;
+                            }
+                        }
+
+                        lineText.append("tspan")
+                            .attr("fill", colorLerp("#000000", "#FF7326", importance))
+                            .style("font-weight", isHighlight ? "bold" : "normal")
+                            .text(word + " "); // Add a space after each word for separation
+                    });
+                });
+
+            }
+
+            const category_explanation_mapping = {
+
+                "Colors": barchart_explanation,
+                "Artstyle": artstyle_explanation,
+                "Description": description_explanation,
+                "Theme": theme_explanation,
+                "Objects": barchart_explanation,
+                "Semantics": barchart_explanation
+            }
+
+            function buildUpButton(button, category, margin, height, downButton, isRelevant) {
+                var isRanking = "@Model.DoRanking" === "True";
+
+                
+                if (isRanking) {
+                    button
+                    .style("top", `${margin.top + height / 2}px`) // Position the first button slightly above the middle // Vertically in the middle of the chart
+                    .style("right", "5px") // 5px from the right edge of the chartContainer
+                    .style("margin-left", "20px") // Adding left margin
+                    .style("background-image", "url(/images/up.png)") // Setting background image
+                    .style("background-size", "cover") // Ensure the image covers the button
+                    .style("background-repeat", "no-repeat") // No repetition of the image
+                    .style("background-color", "#f0f0f0")
+                    .style("padding", "20px 20px") // Padding to ensure text and image fit well
+                    .on("click", function () {
+                        const r = sortedCategories.findIndex(element => element === category);
+
+                        if (r > 0) {
+                            [sortedCategories[r], sortedCategories[r - 1]] = [sortedCategories[r - 1], sortedCategories[r]];
+                            [sortedCategoriesImportances[r], sortedCategoriesImportances[r - 1]] = [sortedCategoriesImportances[r - 1], sortedCategoriesImportances[r]];
+                        }
+
+                        $.ajax({
+                            url: '/api/artworks/IncreaseRanking/' + recommendationIndex + "?category=" + category,
+                            type: 'POST',
+                            complete: function () {
+                            }
+                        });
+
+                        displayCategories();
+                    });
+                }
+                else {
+                    button
+                    .style("top", `${margin.top + height / 2}px`) // Position the first button slightly above the middle // Vertically in the middle of the chart
+                    .style("right", "5px") // 5px from the right edge of the chartContainer
+                    .style("margin-left", "20px") // Adding left margin
+                    .style("background-image", "url(/images/thumbs-up.png)") // Setting background image
+                    .style("background-size", "cover") // Ensure the image covers the button
+                    .style("background-repeat", "no-repeat") // No repetition of the image
+                    .style("background-color", isRelevant === 2 ? "#58ff7b" : "#f0f0f0")
+                    .style("padding", "20px 20px") // Padding to ensure text and image fit well
+                    .on("click", function () {
+                        this.style.backgroundColor = "#58ff7b";
+                        downButton.style("background-color", "#f0f0f0");
+                        setRelevant(category, recommendationIndex);
+                    });
+                }
+            }
+
+            function buildDownButton(button, category, margin, height, upButton, isRelevant) {
+                var isRanking = "@Model.DoRanking" === "True";
+
+                if (isRanking) {
+                     button
+                    .style("top", `${margin.top + height / 2}px`) // Position the first button slightly above the middle // Vertically in the middle of the chart
+                    .style("right", "5px") // 5px from the right edge of the chartContainer
+                    .style("margin-left", "20px") // Adding left margin
+                    .style("background-image", "url(/images/down.png)") // Setting background image
+                    .style("background-size", "cover") // Ensure the image covers the button
+                    .style("background-repeat", "no-repeat") // No repetition of the image
+                        .style("background-color", "#f0f0f0")
+                    .style("padding", "20px 20px") // Padding to ensure text and image fit well
+                    .on("click", function () {
+                        console.log(sortedCategories);
+                        console.log(sortedCategoriesImportances);
+
+                            const r = sortedCategories.findIndex(element => element === category);
+
+                            if (r < importanceArray.length - 1) {
+                                [sortedCategories[r], sortedCategories[r + 1]] = [sortedCategories[r + 1], sortedCategories[r]];
+                                [sortedCategoriesImportances[r], sortedCategoriesImportances[r + 1]] = [sortedCategoriesImportances[r + 1], sortedCategoriesImportances[r]];
+                            }
+
+                            $.ajax({
+                                url: '/api/artworks/DecreaseRanking/' + recommendationIndex + "?category=" + category,
+                                type: 'POST',
+                                complete: function () {
+                                }
+                            });
+
+
+                            displayCategories();
+                    });
+                }
+                else {
+                    button
+                    .style("top", `${margin.top + height / 2}px`) // Position the first button slightly above the middle // Vertically in the middle of the chart
+                    .style("right", "5px") // 5px from the right edge of the chartContainer
+                    .style("margin-left", "20px") // Adding left margin
+                    .style("background-image", "url(/images/thumbs-down.png)") // Setting background image
+                    .style("background-size", "cover") // Ensure the image covers the button
+                    .style("background-repeat", "no-repeat") // No repetition of the image
+                    .style("background-color", isRelevant === 1 ? "#ff552f" : "#f0f0f0")
+                    .style("padding", "20px 20px") // Padding to ensure text and image fit well
+                    .on("click", function () {
+                        this.style.backgroundColor = "#ff552f";
+                        upButton.style("background-color", "#f0f0f0");
+                        setNonRelevant(category, recommendationIndex);
+                    });
+                }
+            }
+
+            function displayCategories() {
+                 const chartContainer = d3.select("#charts");
+                 chartContainer.html("");
+
+                  
+                  
+                  for (let i = 0; i < categories[index].length; i++) {
+                      category_explanation_mapping[sortedCategories[i]](sortedCategories[i], sortedCategoriesImportances[i], i);
+                  } 
+
+                    /*
+                 importanceArray.forEach((item, index) => {
+                    category_explanation_mapping[item.name](item.name, item, index);
+                 });
+                 */
+            }
+
+            displayCategories();
+          
+           
+            
+
+
+            function colorLerp(from, to, i) {
+                // Ensure the interpolation value is between 0 and 1
+                i = Math.max(0, Math.min(1, i));
+
+                // Convert hex colors to RGB
+                let fromRgb = hexToRgb(from);
+                let toRgb = hexToRgb(to);
+
+                // Perform linear interpolation between each RGB component
+                let r = lerp(fromRgb.r, toRgb.r, i);
+                let g = lerp(fromRgb.g, toRgb.g, i);
+                let b = lerp(fromRgb.b, toRgb.b, i);
+
+                // Convert the resulting RGB color back to hex
+                return rgbToHex(Math.round(r), Math.round(g), Math.round(b));
+            }
+
+            // Helper function to perform linear interpolation
+            function lerp(start, end, t) {
+                return start + (end - start) * t;
+            }
+
+            // Convert a hex color to an RGB object
+            function hexToRgb(hex) {
+                let r = 0, g = 0, b = 0;
+                // 3 digits
+                if (hex.length == 4) {
+                    r = parseInt(hex[1] + hex[1], 16);
+                    g = parseInt(hex[2] + hex[2], 16);
+                    b = parseInt(hex[3] + hex[3], 16);
+                }
+                // 6 digits
+                else if (hex.length == 7) {
+                    r = parseInt(hex[1] + hex[2], 16);
+                    g = parseInt(hex[3] + hex[4], 16);
+                    b = parseInt(hex[5] + hex[6], 16);
+                }
+                return { r: r, g: g, b: b };
+            }
+
+            // Convert an RGB color to hex format
+            function rgbToHex(r, g, b) {
+                return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).toUpperCase();
+            }
+
+        }
+    }
+
+    function setRelevant(category, index) {
+        console.log("Relevant: " + category + " " + index);
+
+        
+        relevancies[index][category] = 2;
+
+         $.ajax({
+            url: '/api/artworks/SetRelevant/' + index + "?category=" + category,
+                type: 'POST',
+                complete: function() {
+
+                    checkRatings();
+
+                }
+            });
+
+    }
+
+    function setNonRelevant(category, index) {
+        console.log("Non Relevant: " + category + " " + index);
+
+        relevancies[index][category] = 1;
+
+        $.ajax({
+            url: '/api/artworks/SetNonRelevant/' + index + "?category=" + category,
+            type: 'POST',
+            complete: function () {
+                    checkRatings();
+
+            }
+        });
+
+    }
+
+    function getCategoryRelevancies(index) {
+        return new Promise((resolve, reject) => {
+            $.ajax({
+                url: '/api/artworks/GetRelevancies/' + index,
+                type: 'GET',
+                success: function (response) {
+                    resolve(response);
+                },
+                error: function (error) {
+                    reject(error);
+                }
+            });
+        });
+    }
+
+    function collectRelevancies(callback) {
+        const promises = [];
+        for (let i = 0; i < recommendationsCount; i++) {
+            promises.push(getCategoryRelevancies(i));
+        }
+
+
+        Promise.all(promises)
+        .then(results => {
+            relevancies = results;
+            callback();
+        }).catch(error => {
+            console.error('An error occurred while fetching relevancies:', error);
+        });
+    }
+
+
+    function relevancyCallback(relevancy, buttonUp, buttonDown) {
+        if (relevancy === 1) {
+            buttonUp.style("background-color", "#f0f0f0");
+            buttonDown.style("background-color", "#ff552f");
+        }
+        else if (relevancy === 2) {
+            buttonUp.style("background-color", "#58ff7b");
+            buttonDown.style("background-color", "#f0f0f0");
+        }
+        else {
+            buttonUp.style("background-color", "#f0f0f0");
+            buttonDown.style("background-color", "#f0f0f0");
+        }
+    }
+
+
+    function showImageModal() {
+
+        const ImageFileNames = @Html.Raw(Json.Serialize(Model.ImageFileName));
+        const imageName = ImageFileNames[recommendationIndex];
+
+        // Use AJAX to fetch image data from the server
+        $.ajax({
+            url: '/api/artworks/GetImageDescription/' + imageName,
+            type: 'GET',
+            success: function (data) {
+                // Set the source of the modal image based on the retrieved image data
+                var modalImage = document.getElementById('modalImage');
+                modalImage.src = '/dataset/' + imageName;
+
+                var modalDescription = document.getElementById('exampleModalLongTitle');
+                modalDescription.innerHTML = data[0] + " - " + data[1];
+
+                var modalDescription = document.getElementById('modalDescription');
+                modalDescription.innerHTML = data[2];
+
+
+                // Show the modal
+                $('#exampleModalCenter').modal('show');
+            },
+            error: function (error) {
+                console.error('Error fetching image data:', error);
+            }
+        });
+    }
+
+    function addFavorite() {
+
+        const ImageFileNames = @Html.Raw(Json.Serialize(Model.ImageFileName));
+        const imageName = ImageFileNames[recommendationIndex];
+
+        // Use AJAX to fetch image data from the server
+        $.ajax({
+            url: '/api/artworks/AddFavorite/' + imageName,
+            type: 'POST'
+        });
+
+        console.log(button);
+    }
+
+    function pushMouseHover(field) {
+        if (mouseEnterTime !== undefined) {
+
+            var mouseOut = Date.now();
+            var timeDiff = mouseOut - mouseEnterTime; //in ms
+            timeDiff /= 1000; // strip the ms
+            var duration = Math.round(timeDiff); // get seconds
+
+            $.ajax({
+                url: '/api/artworks/AddHoverData/' + `?secondsHovered=${duration}&field=${encodeURIComponent(field)}`,
+                type: 'POST'
+            });
+
+            mouseEnterTime = undefined;
+        }
+    }
+
+    function pushUpdateLookAtRecommendation(recommendationIndex) {
+         var end = Date.now();
+         var timeDiff = end  - timeLookatRecommendationStart; //in ms
+         timeDiff /= 1000; // strip the ms
+         var duration = Math.round(timeDiff); // get seconds
+
+          $.ajax({
+            url: '/api/artworks/AddLookatRecommendation/' + recommendationIndex + "?seconds=" + duration,
+                type: 'POST'
+            });
+
+         timeLookatRecommendationStart = Date.now();
+    }
+
+    function pushUpdateLookAtRecommendationAndNext(recommendationIndex, url) {
+         var end = Date.now();
+         var timeDiff = end  - timeLookatRecommendationStart; //in ms
+         timeDiff /= 1000; // strip the ms
+         var duration = Math.round(timeDiff); // get seconds
+
+          $.ajax({
+            url: '/api/artworks/AddLookatRecommendation/' + recommendationIndex + "?seconds=" + duration,
+                type: 'POST',
+                success: function () {
+                     window.location.href = url;
+                }
+            });
+
+         timeLookatRecommendationStart = Date.now();
+    }
+
+</script>

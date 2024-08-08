@@ -1,0 +1,30 @@
+﻿@page
+@model ErrorModel
+@{
+    ViewData["Title"] = "Error";
+}
+
+<h1 class="text-danger">Error.</h1>
+<h2 class="text-danger">An error occurred while processing your request.</h2>
+
+@if (Model.ShowRequestId)
+{
+    <p>
+        <strong>Request ID:</strong> <code>@Model.RequestId</code>
+    </p>
+}
+
+<h3>Something seems to have gone wrong! Please try logging in again.</h3>
+
+<form asp-controller="User" asp-action="Start" method="post">
+
+    <div class="form-group mb-3">
+        <label for="email">Email Address</label>
+        <input name="email" type="email" class="form-control" id="emailInput" placeholder="Enter your email address">
+    </div>
+
+
+
+    <br />
+    <button type="submit" id="agreeBtn" class="btn btn-primary">Agree & continue</button>
+</form>
